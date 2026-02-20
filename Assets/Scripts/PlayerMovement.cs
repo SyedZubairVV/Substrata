@@ -16,25 +16,31 @@ public class PlayerMovement : MonoBehaviour
     public float airAcceleration = 40f;
 
     [Header("Jump")]
-    public float jumpSpeed = 14f;
+    public float jumpSpeed = 10f;
 
     [Header("Jump Forgiveness")]
     public float coyoteTime = 0.1f;
     public float jumpBufferTime = 0.1f;
 
     [Header("Gravity")]
-    public float fallMultiplier = 2.5f;
-    public float lowJumpMultiplier = 2f;
+    public float fallMultiplier = 5f;
+    public float lowJumpMultiplier = 3f;
 
-    Vector2 moveInput;
+	[Header("Dash")]
+	public float dashPower = 10f;
+	public float dashTime = 0.2f;
+	public float dashCooldown = 1f;
+	bool canDash = true;
+	bool isDashing;
+
+	Vector2 moveInput;
 
     float coyoteTimer;
     float jumpBufferTimer;
 
     bool isGrounded;
     bool wasGrounded;
-
-    void Update()
+	void Update()
     {
         moveInput = InputSystem.actions["Move"].ReadValue<Vector2>();
 
@@ -58,7 +64,12 @@ public class PlayerMovement : MonoBehaviour
             );
         }
 
-        animator.SetBool("isWalking", Mathf.Abs(moveInput.x) > 0.01f);
+		if (InputSystem.actions["Dash"].WasPressedThisFrame() && canDash)
+		{
+			StartCoroutine(Dash());
+		}
+
+		animator.SetBool("isWalking", Mathf.Abs(moveInput.x) > 0.01f);
         animator.SetBool("isGrounded", isGrounded);
         animator.SetFloat("yVelocity", body.linearVelocity.y);
 
@@ -85,6 +96,8 @@ public class PlayerMovement : MonoBehaviour
 
     void HandleMovement()
     {
+        if (isDashing) { return; }
+
         float targetSpeed = moveInput.x * moveSpeed;
 
         float accelRate = isGrounded ? acceleration : airAcceleration;
@@ -103,7 +116,9 @@ public class PlayerMovement : MonoBehaviour
 
     void HandleJump()
     {
-        if (jumpBufferTimer > 0f && coyoteTimer > 0f)
+		if (isDashing) { return; }
+
+		if (jumpBufferTimer > 0f && coyoteTimer > 0f)
         {
             body.linearVelocity = new Vector2(
                 body.linearVelocity.x,
@@ -117,7 +132,9 @@ public class PlayerMovement : MonoBehaviour
 
     void ApplyBetterGravity()
     {
-        if (body.linearVelocity.y < 0)
+		if (isDashing) return;
+
+		if (body.linearVelocity.y < 0)
         {
             body.linearVelocity += Vector2.up * Physics2D.gravity.y *
                 (fallMultiplier - 1) * Time.fixedDeltaTime;
@@ -127,9 +144,9 @@ public class PlayerMovement : MonoBehaviour
             body.linearVelocity += Vector2.up * Physics2D.gravity.y *
                 (lowJumpMultiplier - 1) * Time.fixedDeltaTime;
         }
-    }
+	}
 
-    bool IsGrounded()
+	bool IsGrounded()
     {
         return Physics2D.OverlapAreaAll(
             groundCheck.bounds.min,
@@ -137,4 +154,28 @@ public class PlayerMovement : MonoBehaviour
             groundLayer
         ).Length > 0;
     }
+
+	private System.Collections.IEnumerator Dash()
+	{
+		canDash = false;
+		isDashing = true;
+
+		float originalGravity = body.gravityScale;
+		body.gravityScale = 0f;
+
+		float dashDir = 1f;
+		if (moveInput.x > 0.01f) dashDir = 1f;
+		else if (moveInput.x < -0.01f) dashDir = -1f;
+		else dashDir = sprite.flipX ? -1f : 1f;
+
+		body.linearVelocity = new Vector2(dashDir * dashPower, 0f);
+
+		yield return new WaitForSeconds(dashTime);
+
+		body.gravityScale = originalGravity;
+		isDashing = false;
+
+		yield return new WaitForSeconds(dashCooldown);
+		canDash = true;
+	}
 }
