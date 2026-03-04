@@ -8,7 +8,7 @@ public class PlayerMovement : MonoBehaviour
     public BoxCollider2D groundCheck;
     public LayerMask groundLayer;
     public SpriteRenderer sprite;
-    //public Animator animator;
+    public Animator animator;
 
     [Header("Movement")]
     public float moveSpeed = 8f;
@@ -54,9 +54,10 @@ public class PlayerMovement : MonoBehaviour
             sprite.flipX = true;
 
         // Update animations
-        //animator.SetBool("isWalking", Mathf.Abs(moveInput.x) > 0.01f);
-        //animator.SetBool("isGrounded", isGrounded);
-        //animator.SetFloat("yVelocity", body.linearVelocity.y);
+        animator.SetBool("isRunning", Mathf.Abs(moveInput.x) > 0.01f);
+        animator.SetBool("isGrounded", isGrounded);
+        animator.SetFloat("yVelocity", body.linearVelocity.y);
+        animator.SetBool("isDashing", isDashing);
     }
 
     void FixedUpdate()

@@ -10173,6 +10173,7 @@ GameObject:
   - component: {fileID: 1428579539}
   - component: {fileID: 1428579538}
   - component: {fileID: 1428579537}
+  - component: {fileID: 1428579541}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -10198,15 +10199,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   sprite: {fileID: 1428579539}
-  animator: {fileID: 0}
+  animator: {fileID: 1428579541}
   moveSpeed: 8
   acceleration: 60
   airAcceleration: 40
-  jumpSpeed: 10
-  coyoteTime: 0.1
-  jumpBufferTime: 0.1
-  fallMultiplier: 5
-  lowJumpMultiplier: 3
+  jumpForce: 5
   dashPower: 10
   dashTime: 0.2
   dashCooldown: 1
@@ -10313,6 +10310,28 @@ Transform:
   - {fileID: 69633254}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &1428579541
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1428579536}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 3905afb85b0f4d847bb361068aabc39c, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1432406625
 GameObject:
   m_ObjectHideFlags: 0
