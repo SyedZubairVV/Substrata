@@ -23,6 +23,12 @@ public class PlayerMovement : MonoBehaviour
     public float dashTime = 0.2f;
     public float dashCooldown = 1f;
 
+    [Header("Equipment")]
+    public GameObject torchPrefab;
+
+    [Header("Torch Settings")]
+    public float torchOffset = 0.8f;
+
     private Vector2 moveInput;
     private bool isGrounded;
     private bool isDashing;
@@ -45,6 +51,11 @@ public class PlayerMovement : MonoBehaviour
         if (InputSystem.actions["Dash"].WasPressedThisFrame() && canDash)
         {
             StartCoroutine(Dash());
+        }
+
+        if (InputSystem.actions["Torch"].WasPressedThisFrame())
+        {
+            PlaceTorch();
         }
 
         // Flip sprite depending on movement direction
@@ -121,4 +132,16 @@ public class PlayerMovement : MonoBehaviour
         yield return new WaitForSeconds(dashCooldown);
         canDash = true;
     }
+
+    void PlaceTorch()
+    {
+		// Determine direction: if flipX is true, player is facing Left (-1), otherwise Right (1)
+		float direction = sprite.flipX ? -1f : 1f;
+
+		// Calculate the spawn position: Player position + (direction * offset)
+		Vector3 spawnPos = transform.position + new Vector3(direction * torchOffset, 1, 0);
+
+		// Spawn the torch
+		Instantiate(torchPrefab, spawnPos, Quaternion.identity);
+	}
 }
