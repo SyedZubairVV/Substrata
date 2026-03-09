@@ -34,30 +34,21 @@ public class PlayerHealth : MonoBehaviour
     }
 
     public void TakeDamage(int damage)
-    {
-        if (isInvincible || isDead) return;
-
-        currentHealth = Mathf.Clamp(currentHealth - damage, 0, maxHealth);
-
-        OnHealthChanged?.Invoke(currentHealth);
-
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
-        else
-        {
-            StartCoroutine(Invincibility());
-        }
-    }
+{
+    if (isInvincible || isDead) return;
+    currentHealth = Mathf.Clamp(currentHealth - damage, 0, maxHealth);
+    OnHealthChanged?.Invoke(currentHealth);
+    if (currentHealth <= 0)
+        Die();
+    else
+        StartCoroutine(Invincibility());
+}
 
     void Die()
     {
         if (isDead) return;
 
         isDead = true;
-        Debug.Log("Player Died");
-
         GetComponent<PlayerMovement>().enabled = false;
     }
 
