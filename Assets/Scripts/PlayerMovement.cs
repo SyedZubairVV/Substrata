@@ -29,6 +29,10 @@ public class PlayerMovement : MonoBehaviour
     [Header("Torch Settings")]
     public float torchOffset = 0.8f;
 
+
+    // set by PlayerCombat to stop movement script overriding sprite direction
+    [HideInInspector] public bool isAttacking = false;
+
     private Vector2 moveInput;
     private bool isGrounded;
     private bool isDashing;
@@ -58,11 +62,15 @@ public class PlayerMovement : MonoBehaviour
             PlaceTorch();
         }
 
-        // Flip sprite depending on movement direction
-        if (moveInput.x > 0.01f)
-            sprite.flipX = false;
-        else if (moveInput.x < -0.01f)
-            sprite.flipX = true;
+        // only flip sprite based on movement direction when NOT attacking
+        // when attacking, PlayerCombat controls the sprite direction via FaceMouseDirection
+        if (!isAttacking)
+        {
+            if (moveInput.x > 0.01f)
+                sprite.flipX = false;
+            else if (moveInput.x < -0.01f)
+                sprite.flipX = true;
+        }
 
         // Update animations
         animator.SetBool("isRunning", Mathf.Abs(moveInput.x) > 0.01f);
@@ -131,6 +139,10 @@ public class PlayerMovement : MonoBehaviour
 
         yield return new WaitForSeconds(dashCooldown);
         canDash = true;
+    }
+    public bool IsGroundedPublic()
+    {
+        return IsGrounded();
     }
 
     void PlaceTorch()
