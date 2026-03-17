@@ -127,14 +127,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 877366769059232111, guid: 64e12c119dba1d3448d0852e17b97af8, type: 3}
-      propertyPath: jumpForce
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 877366769059232111, guid: 64e12c119dba1d3448d0852e17b97af8, type: 3}
-      propertyPath: torchPrefab
-      value: 
-      objectReference: {fileID: 2812244921688856355, guid: d885bd193177f0e49b8631d891b28ab9, type: 3}
     - target: {fileID: 3989675423859388833, guid: 64e12c119dba1d3448d0852e17b97af8, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -179,10 +171,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7526928201575023537, guid: 64e12c119dba1d3448d0852e17b97af8, type: 3}
-      propertyPath: m_TagString
-      value: Player
-      objectReference: {fileID: 0}
     - target: {fileID: 7669504235748000854, guid: 64e12c119dba1d3448d0852e17b97af8, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -198,10 +186,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 8493853201492826510, guid: 64e12c119dba1d3448d0852e17b97af8, type: 3}
-      insertIndex: 4
-      addedObject: {fileID: 538985420}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 64e12c119dba1d3448d0852e17b97af8, type: 3}
 --- !u!1 &37464401
 GameObject:
@@ -1161,25 +1146,50 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
---- !u!1 &538985414 stripped
+--- !u!1 &409629014
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 8493853201492826510, guid: 64e12c119dba1d3448d0852e17b97af8, type: 3}
-  m_PrefabInstance: {fileID: 9513936}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &538985420
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 409629016}
+  - component: {fileID: 409629015}
+  m_Layer: 0
+  m_Name: SoundManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &409629015
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 538985414}
+  m_GameObject: {fileID: 409629014}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a0f8893ea298d034fa1676b0585f5c90, type: 3}
+  m_Script: {fileID: 11500000, guid: 6624d5825b59c4241a8a485508e88d69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  maxHealth: 100
-  invincibleTime: 1
+--- !u!4 &409629016
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 409629014}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.13741, y: -0.45686, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &538985425 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6008900049357657681, guid: 64e12c119dba1d3448d0852e17b97af8, type: 3}
@@ -1598,6 +1608,7 @@ MonoBehaviour:
   dashCooldown: 1
   torchPrefab: {fileID: 0}
   torchOffset: 0.8
+  isAttacking: 0
 --- !u!61 &885687970
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -5809,3 +5820,4 @@ SceneRoots:
   - {fileID: 885687973}
   - {fileID: 353639818801248787}
   - {fileID: 1215313011}
+  - {fileID: 409629016}
