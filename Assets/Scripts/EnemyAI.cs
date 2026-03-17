@@ -58,6 +58,7 @@ public class EnemyAI : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         sprite = GetComponent<SpriteRenderer>();
+        enemySounds = GetComponent<EnemySounds>();
         spriteRenderer = sprite; // same reference, just used for color
         originalColor = sprite.color; // save original so we can return to it
         player = GameObject.FindGameObjectWithTag("Player").transform;

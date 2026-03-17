@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 2886975497402287071}
   - component: {fileID: 6593887094395715295}
   - component: {fileID: 8252321005803578063}
+  - component: {fileID: 3253539511101926232}
   m_Layer: 0
   m_Name: MushroomMonster
   m_TagString: Untagged
@@ -205,11 +206,36 @@ MonoBehaviour:
   detectionRange: 5
   attackRange: 1.5
   chaseSpeed: 3
-  maxHealth: 3
+  maxHealth: 20
   attackDamage: 5
   attackCooldown: 1
+  knockbackForce: 5
+  knockbackDuration: 0.15
   attackRadius: 0.5
   attackReach: 1.26
   attackHeightOffset: -0.3
   contactDamage: 1
   contactDamageCooldown: 1
+  hitFlashColor: {r: 1, g: 0.3, b: 0.3, a: 0.7}
+  hitFlashDuration: 0.15
+  maxAttackStateDuration: 0.4
+--- !u!114 &3253539511101926232
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5865685200189498749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e9fc9d2b36a77d4dbf01f1f24a0ae4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  aggroClip: {fileID: 8300000, guid: b8314fcb17901c94bac5835fc65373fa, type: 3}
+  attackClips:
+  - {fileID: 8300000, guid: 8db7aecce92ac4c45a17924891d88171, type: 3}
+  deathClips:
+  - {fileID: 8300000, guid: 8850df61e65d18c448d8e0ef6e69317b, type: 3}
+  aggroVolume: 0.8
+  attackVolume: 0.8
+  deathVolume: 1

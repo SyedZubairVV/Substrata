@@ -90,7 +90,7 @@ GameObject:
   - component: {fileID: 8062960409819322307}
   m_Layer: 6
   m_Name: Collider
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -252,7 +252,10 @@ GameObject:
   - component: {fileID: 5768472781198004168}
   - component: {fileID: 5136563759065994208}
   - component: {fileID: 877366769059232111}
+  - component: {fileID: 7873854189056717284}
   - component: {fileID: 947939090349628099}
+  - component: {fileID: 6729047388572979947}
+  - component: {fileID: 7586449396980079124}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -386,10 +389,29 @@ MonoBehaviour:
   moveSpeed: 6
   acceleration: 50
   airAcceleration: 40
-  jumpForce: 12.5
+  jumpForce: 20
   dashPower: 12
   dashTime: 0.3
   dashCooldown: 2
+  torchPrefab: {fileID: 2812244921688856355, guid: d885bd193177f0e49b8631d891b28ab9, type: 3}
+  torchOffset: 0.8
+  isAttacking: 0
+--- !u!114 &7873854189056717284
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8493853201492826510}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0f8893ea298d034fa1676b0585f5c90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  maxHealth: 50
+  invincibleTime: 0.5
+  knockbackForce: 8
+  knockbackDuration: 0.15
 --- !u!95 &947939090349628099
 Animator:
   serializedVersion: 7
@@ -412,3 +434,50 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6729047388572979947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8493853201492826510}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edb61aa73490de34ebee08beace6e238, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  comboWindowTime: 0.5
+  timeBetweenHits: 0.3
+  comboCooldown: 1
+  attackRadius: 0.6
+  attackReach: 0.8
+  attackHeightOffset: 0.6
+  attackDamage: 0100000001000000010000000200000003000000
+  attackMoveSpeedMultiplier: 0.4
+--- !u!114 &7586449396980079124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8493853201492826510}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f0f69ce87c3efd439672845e8b6418a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  footstepClips:
+  - {fileID: 8300000, guid: 7c867494239e9974faa5b3a14631e38b, type: 3}
+  - {fileID: 8300000, guid: 390de63076d549241b8889e49220b32f, type: 3}
+  - {fileID: 8300000, guid: f7fb3c512edee62478ecbf4b22ecd809, type: 3}
+  - {fileID: 8300000, guid: 5f51bb6a8edced84c827db3c272056fc, type: 3}
+  - {fileID: 8300000, guid: b2c024fd8f6a3d84d91a338fbe736cb4, type: 3}
+  footstepInterval: 0.35
+  footstepVolume: 0.6
+  swingClips:
+  - {fileID: 8300000, guid: 1e547cbdf0a388344a13894ef8ff8875, type: 3}
+  - {fileID: 8300000, guid: 594cb6d54b420d34e90c67993e529dcc, type: 3}
+  - {fileID: 8300000, guid: 546450953077cb746b6974f9920f693c, type: 3}
+  swingVolume: 0.8
+  hitImpactClip: {fileID: 8300000, guid: 1e98e6785f006c54c927d5ed41413bfb, type: 3}
+  hitImpactVolume: 1
