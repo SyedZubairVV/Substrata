@@ -1,11 +1,11 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
+using System.Collections;
 
 public class EnemyAI : MonoBehaviour
 {
     [Header("Detection")]
-    public float detectionRange = 5f;  // how far the enemy can see the player
-    public float attackRange = 2f;     // how close before enemy stops and attacks
+    public float detectionRange = 5f;
+    public float attackRange = 2f;
 
     [Header("Movement")]
     public float chaseSpeed = 3f;
@@ -13,16 +13,27 @@ public class EnemyAI : MonoBehaviour
     [Header("Stats")]
     public int maxHealth = 3;
     public int attackDamage = 1;
-    public float attackCooldown = 1.2f; // seconds between each attack
+    public float attackCooldown = 1.2f;
+
+    [Header("Knockback")]
+    public float knockbackForce = 5f;
+    public float knockbackDuration = 0.15f;
 
     [Header("Attack Circle")]
-    public float attackRadius = 0.5f;       // size of the damage circle
-    public float attackReach = 1.26f;       // how far in front of enemy the circle appears
-    public float attackHeightOffset = -0.3f; // move circle up/down to match player height
+    public float attackRadius = 0.5f;
+    public float attackReach = 1.26f;
+    public float attackHeightOffset = -0.3f;
 
     [Header("Contact Damage")]
     public int contactDamage = 1;
-    public float contactDamageCooldown = 1f; // seconds between contact damage hits
+    public float contactDamageCooldown = 1f;
+    
+    [Header("Hit Flash")]
+    public Color hitFlashColor = new Color(1f, 0.3f, 0.3f, 0.7f); // light red, semi transparent
+    public float hitFlashDuration = 0.15f;
+
+    private SpriteRenderer spriteRenderer;
+    private Color originalColor;
 
     private int currentHealth;
     private Rigidbody2D rb;
@@ -32,89 +43,80 @@ public class EnemyAI : MonoBehaviour
 
     private float attackTimer = 0f;
     private float contactDamageTimer = 0f;
-    private float attackingFallbackTimer = 0f;
     private bool isDead = false;
     private bool isAttacking = false;
+    private bool isKnockedBack = false;
+
+    // counts up while attacking — if it exceeds maxAttackStateDuration
+    // the enemy is forced out of the attack state regardless of animation events
+    private float attackStateTimer = 0f;
+    public float maxAttackStateDuration = 0.4f;
+    private EnemySounds enemySounds;
 
     void Start()
     {
-        // grab all components on this GameObject
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         sprite = GetComponent<SpriteRenderer>();
-
-        // find the player once at the start so we always have a reference to them
+        enemySounds = GetComponent<EnemySounds>();
+        spriteRenderer = sprite; // same reference, just used for color
+        originalColor = sprite.color; // save original so we can return to it
         player = GameObject.FindGameObjectWithTag("Player").transform;
-
         currentHealth = maxHealth;
     }
 
     void Update()
     {
-        //if (isDead) return;
-        // TEST DAMAGE (P key)
-        //if (Keyboard.current.oKey.wasPressedThisFrame)
-        //{
-        //    TakeDamage(1);
-        //}
+        if (isDead) return;
+        if (isKnockedBack) return;
 
         attackTimer -= Time.deltaTime;
         contactDamageTimer -= Time.deltaTime;
 
-        // FALLBACK TIMER
-        // if the attack animation event OnAttackEnd() somehow never fires,
-        // this forces isAttacking back to false after the cooldown expires
-        // so the enemy never gets permanently stuck in the attacking state
+        // --- ATTACK STATE TIMEOUT ---
+        // counts up every frame while isAttacking is true
+        // if the animation event OnAttackEnd never fires, this forces a reset
+        // maxAttackStateDuration should be slightly longer than your attack animation
         if (isAttacking)
         {
-            attackingFallbackTimer -= Time.deltaTime;
-            if (attackingFallbackTimer <= 0f)
+            attackStateTimer += Time.deltaTime;
+            if (attackStateTimer >= maxAttackStateDuration)
             {
-                isAttacking = false;
-                animator.SetBool("isAttacking", false);
+                Debug.Log("Attack timeout - forcing reset");
+                ForceResetAttack();
             }
         }
 
-        // DISTANCE CHECK
-        // only measure horizontal distance so that the player's height difference
-        // doesn't stop the enemy from attacking while standing next to them
         float horizDist = Mathf.Abs(player.position.x - transform.position.x);
 
-        // ATTACK STATE
-        // player is within attack range
+        // --- ATTACK STATE ---
         if (horizDist <= attackRange)
         {
-            // stop moving horizontally, keep vertical velocity for gravity
             rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
             animator.SetBool("isMoving", false);
-
-            // always face the player
             FacePlayer();
 
-            // start a new attack only if not already mid-attack and cooldown is done
             if (!isAttacking && attackTimer <= 0f)
                 StartAttack();
         }
-        // CHASE STATE
-        // player is spotted but not in attack range yet
+        // --- CHASE STATE ---
         else if (horizDist <= detectionRange)
         {
+            // play aggro sound the first time enemy spots the player
+            enemySounds?.PlayAggro();
+            
             if (!isAttacking)
             {
                 animator.SetBool("isAttacking", false);
                 animator.SetBool("isMoving", true);
 
-                // move only on X axis toward the player
-                // keeping rb.linearVelocity.y means gravity still applies normally
                 float dirX = player.position.x - transform.position.x;
                 float moveDir = dirX > 0 ? 1f : -1f;
                 rb.linearVelocity = new Vector2(moveDir * chaseSpeed, rb.linearVelocity.y);
-
-                sprite.flipX = moveDir < 0; // flip sprite to face movement direction
+                sprite.flipX = moveDir < 0;
             }
         }
-        // IDLE STATE
-        // player is out of range, stand still
+        // --- IDLE STATE ---
         else
         {
             if (!isAttacking)
@@ -129,89 +131,117 @@ public class EnemyAI : MonoBehaviour
     {
         isAttacking = true;
         attackTimer = attackCooldown;
+        attackStateTimer = 0f; // reset timer on every new attack
         animator.SetBool("isAttacking", true);
-
-        // fallback is slightly longer than the cooldown so it only
-        // kicks in if the animation event genuinely never fired
-        attackingFallbackTimer = attackCooldown + 0.5f;
+        enemySounds?.PlayAttack();
+        Debug.Log("Enemy attack started");
     }
 
-    // ANIMATION EVENT
-    // hit frame of attack animation
-    // fires an invisible circle in front of the enemy at that exact frame
+    // single place to reset attack state
+    // called by both OnAttackEnd animation event AND the timeout
+    void ForceResetAttack()
+    {
+        isAttacking = false;
+        attackStateTimer = 0f;
+        animator.SetBool("isAttacking", false);
+        Debug.Log("Enemy attack reset");
+    }
+
+    // --- ANIMATION EVENT --- hit frame
     public void DealAttackDamage()
     {
         float facingDir = sprite.flipX ? -1f : 1f;
-
-        // calculate where the circle appears:
-        // start at enemy center, push forward by attackReach, adjust height by offset
         Vector2 attackOrigin = (Vector2)transform.position
             + Vector2.right * facingDir * attackReach
             + Vector2.up * attackHeightOffset;
 
-        // get every collider inside that circle
         Collider2D[] hits = Physics2D.OverlapCircleAll(attackOrigin, attackRadius);
 
         foreach (Collider2D hit in hits)
         {
-            if (hit.transform.root == transform.root) continue; // skip ourselves
-
-            // check if the hit object is part of the player's hierarchy
+            if (hit.transform.root == transform.root) continue;
             if (hit.transform.root == player.transform.root)
             {
-                // search the whole player hierarchy for PlayerHealth
-                // this works even if PlayerHealth is on a parent or child object
                 PlayerHealth ph = player.transform.root.GetComponentInChildren<PlayerHealth>();
                 if (ph != null)
-                    ph.TakeDamage(attackDamage);
-                return; // stop after hitting player once
+                {
+                    Vector2 hitDir = (player.position - transform.position).normalized;
+                    ph.TakeDamage(attackDamage, hitDir);
+                }
+                return;
             }
         }
     }
 
-    // ANIMATION EVENT
-    // last frame of attack animation
-    // tells the script the animation has finished so a new attack can begin
+    // --- ANIMATION EVENT --- last frame
     public void OnAttackEnd()
     {
-        isAttacking = false;
-        animator.SetBool("isAttacking", false);
+        Debug.Log("Enemy OnAttackEnd fired");
+        ForceResetAttack();
     }
 
-    // called externally when the player attacks this enemy
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, Vector2 hitDirection)
     {
         if (isDead) return;
+
         currentHealth -= damage;
-        animator.SetTrigger("takingHit");
+
+        // flash red on hit
+        StopCoroutine("HitFlash");
+        StartCoroutine("HitFlash");
+
+        if (!isAttacking)
+        {
+            animator.SetTrigger("takingHit");
+            StartCoroutine(Knockback(hitDirection));
+        }
+
         if (currentHealth <= 0) Die();
+    }
+
+    IEnumerator Knockback(Vector2 direction)
+    {
+        isKnockedBack = true;
+        rb.linearVelocity = new Vector2(direction.x * knockbackForce, knockbackForce * 0.5f);
+        yield return new WaitForSeconds(knockbackDuration);
+        isKnockedBack = false;
+        rb.linearVelocity = Vector2.zero;
+    }
+    IEnumerator HitFlash()
+    {
+        sprite.color = hitFlashColor;
+        yield return new WaitForSeconds(hitFlashDuration);
+        sprite.color = originalColor;
     }
 
     void Die()
     {
         isDead = true;
-        animator.ResetTrigger("takingHit"); // clear any pending takingHit trigger
+        
+        animator.ResetTrigger("takingHit");
         animator.SetBool("isAttacking", false);
         animator.SetBool("isMoving", false);
         animator.SetBool("isDead", true);
-
-        // stop horizontal movement but keep gravity on
-        // so the enemy falls to the ground naturally during the death animation
+        enemySounds?.PlayDeath();
         rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
-
-        // lock horizontal movement so they don't slide around while dying
         rb.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
-        Destroy(gameObject, 2f);                    // removes the object after death anim plays
+
+        CapsuleCollider2D col = GetComponent<CapsuleCollider2D>();
+        if (col == null) col = GetComponentInChildren<CapsuleCollider2D>();
+        if (col != null)
+            col.offset = new Vector2(col.offset.x, col.offset.y - 0.28f);
+
+        Destroy(gameObject, 5f);
     }
 
-    // fires every frame the player is physically touching the enemy body
-    // separate cooldown from attack so bumping and attacking don't block each other
     void OnCollisionStay2D(Collision2D collision)
     {
         if (isDead) return;
         if (collision.gameObject.CompareTag("Player") && contactDamageTimer <= 0f)
         {
-            collision.gameObject.GetComponent<PlayerHealth>()?.TakeDamage(contactDamage);
+            Vector2 hitDir = (collision.transform.position - transform.position).normalized;
+            PlayerHealth ph = collision.gameObject.GetComponent<PlayerHealth>();
+            if (ph != null) ph.TakeDamage(contactDamage, hitDir);
             contactDamageTimer = contactDamageCooldown;
         }
     }
@@ -219,10 +249,9 @@ public class EnemyAI : MonoBehaviour
     void FacePlayer()
     {
         float dirX = player.position.x - transform.position.x;
-        sprite.flipX = dirX < 0; // negative X means player is to the left, so flip
+        sprite.flipX = dirX < 0;
     }
 
-    // draws visual helpers in the Scene view while the enemy is selected
     void OnDrawGizmosSelected()
     {
         if (sprite != null)
@@ -232,13 +261,10 @@ public class EnemyAI : MonoBehaviour
                 + Vector2.right * facingDir * attackReach
                 + Vector2.up * attackHeightOffset;
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(attackOrigin, attackRadius); // red = attack circle
+            Gizmos.DrawWireSphere(attackOrigin, attackRadius);
         }
-
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, detectionRange); // yellow = detection range
-
-        // blue vertical lines show the horizontal attack range on both sides
+        Gizmos.DrawWireSphere(transform.position, detectionRange);
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(
             new Vector3(transform.position.x - attackRange, transform.position.y - 2f),
