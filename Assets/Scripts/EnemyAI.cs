@@ -27,6 +27,13 @@ public class EnemyAI : MonoBehaviour
     [Header("Contact Damage")]
     public int contactDamage = 1;
     public float contactDamageCooldown = 1f;
+    
+    [Header("Hit Flash")]
+    public Color hitFlashColor = new Color(1f, 0.3f, 0.3f, 0.7f); // light red, semi transparent
+    public float hitFlashDuration = 0.15f;
+
+    private SpriteRenderer spriteRenderer;
+    private Color originalColor;
 
     private int currentHealth;
     private Rigidbody2D rb;
@@ -51,7 +58,8 @@ public class EnemyAI : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         sprite = GetComponent<SpriteRenderer>();
-        enemySounds = GetComponent<EnemySounds>();
+        spriteRenderer = sprite; // same reference, just used for color
+        originalColor = sprite.color; // save original so we can return to it
         player = GameObject.FindGameObjectWithTag("Player").transform;
         currentHealth = maxHealth;
     }
@@ -174,7 +182,12 @@ public class EnemyAI : MonoBehaviour
     public void TakeDamage(int damage, Vector2 hitDirection)
     {
         if (isDead) return;
+
         currentHealth -= damage;
+
+        // flash red on hit
+        StopCoroutine("HitFlash");
+        StartCoroutine("HitFlash");
 
         if (!isAttacking)
         {
@@ -193,10 +206,17 @@ public class EnemyAI : MonoBehaviour
         isKnockedBack = false;
         rb.linearVelocity = Vector2.zero;
     }
+    IEnumerator HitFlash()
+    {
+        sprite.color = hitFlashColor;
+        yield return new WaitForSeconds(hitFlashDuration);
+        sprite.color = originalColor;
+    }
 
     void Die()
     {
         isDead = true;
+        
         animator.ResetTrigger("takingHit");
         animator.SetBool("isAttacking", false);
         animator.SetBool("isMoving", false);

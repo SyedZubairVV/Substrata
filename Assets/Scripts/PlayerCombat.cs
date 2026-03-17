@@ -13,6 +13,10 @@ public class PlayerCombat : MonoBehaviour
     public float attackReach = 1f;
     public float attackHeightOffset = 0f;
     public int[] attackDamage = { 1, 1, 1, 2, 3 };
+    
+    [Header("Movement")]
+    public float attackMoveSpeedMultiplier = 0.4f; // 0 = stop completely, 1 = full speed
+    private float originalMoveSpeed;
 
     private Animator animator;
     private SpriteRenderer sprite;
@@ -38,6 +42,7 @@ public class PlayerCombat : MonoBehaviour
         sprite = GetComponent<SpriteRenderer>();
         playerMovement = GetComponent<PlayerMovement>();
         playerSounds = GetComponent<PlayerSounds>();
+        originalMoveSpeed = playerMovement.moveSpeed;
         mainCamera = Camera.main;
     }
 
@@ -92,6 +97,9 @@ public class PlayerCombat : MonoBehaviour
 
     void StartAttack(int comboStep)
     {
+        // slow movement when attacking
+        playerMovement.moveSpeed = originalMoveSpeed * attackMoveSpeedMultiplier;
+        
         for (int i = 1; i <= 5; i++)
             animator.SetBool($"attack{i}", false);
 
@@ -176,6 +184,9 @@ public class PlayerCombat : MonoBehaviour
 
     void ResetAttack()
     {
+        // restore full speed when attack ends
+        playerMovement.moveSpeed = originalMoveSpeed;
+        
         bool wasFullCombo = currentCombo >= 5;
 
         isAttacking = false;
