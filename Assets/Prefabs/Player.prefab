@@ -355,7 +355,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 3
+  m_GravityScale: 5
   m_Material: {fileID: 6200000, guid: 30cd7e25387a2b84191e10bb4a88a450, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
@@ -389,7 +389,7 @@ MonoBehaviour:
   moveSpeed: 6
   acceleration: 50
   airAcceleration: 40
-  jumpForce: 20
+  jumpForce: 17
   dashPower: 12
   dashTime: 0.3
   dashCooldown: 2
