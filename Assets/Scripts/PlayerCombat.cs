@@ -149,18 +149,33 @@ public class PlayerCombat : MonoBehaviour
         {
             if (hit.transform.root == transform.root) continue;
 
-            EnemyAI enemy = hit.GetComponent<EnemyAI>();
-            if (enemy == null) enemy = hit.GetComponentInParent<EnemyAI>();
-            if (enemy == null) enemy = hit.GetComponentInChildren<EnemyAI>();
+            int damage = attackDamage[currentCombo - 1];
+            Vector2 hitDir = (hit.transform.position - transform.position).normalized;
 
-            if (enemy != null)
+            // check for ground enemy
+            EnemyAI groundEnemy = hit.GetComponent<EnemyAI>();
+            if (groundEnemy == null) groundEnemy = hit.GetComponentInParent<EnemyAI>();
+            if (groundEnemy == null) groundEnemy = hit.GetComponentInChildren<EnemyAI>();
+
+            if (groundEnemy != null)
             {
-                int damage = attackDamage[currentCombo - 1];
-                Vector2 hitDir = (hit.transform.position - transform.position).normalized;
-                enemy.TakeDamage(damage, hitDir);
-                // play hit impact sound when sword actually connects
+                groundEnemy.TakeDamage(damage, hitDir);
                 playerSounds?.PlayHitImpact();
-                Debug.Log($"Hit enemy for {damage} damage");
+                Debug.Log($"Hit ground enemy for {damage} damage");
+                return;
+            }
+
+            // check for flying enemy
+            FlyingEnemyAI flyingEnemy = hit.GetComponent<FlyingEnemyAI>();
+            if (flyingEnemy == null) flyingEnemy = hit.GetComponentInParent<FlyingEnemyAI>();
+            if (flyingEnemy == null) flyingEnemy = hit.GetComponentInChildren<FlyingEnemyAI>();
+
+            if (flyingEnemy != null)
+            {
+                flyingEnemy.TakeDamage(damage, hitDir);
+                playerSounds?.PlayHitImpact();
+                Debug.Log($"Hit flying enemy for {damage} damage");
+                return;
             }
         }
     }
