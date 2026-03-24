@@ -308,7 +308,7 @@ MonoBehaviour:
   jumpForce: 17
   dashPower: 12
   dashTime: 0.3
-  dashCooldown: 2
+  dashCooldown: 1
   torchPrefab: {fileID: 2812244921688856355, guid: d885bd193177f0e49b8631d891b28ab9, type: 3}
   torchOffset: 0.8
   isAttacking: 0
@@ -326,7 +326,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   maxHealth: 50
   invincibleTime: 0.5
-  knockbackForce: 8
+  knockbackForce: 10
   knockbackDuration: 0.15
 --- !u!95 &947939090349628099
 Animator:
@@ -363,8 +363,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   comboWindowTime: 0.5
-  timeBetweenHits: 0.3
-  comboCooldown: 1
+  timeBetweenHits: 0
+  comboCooldown: 0.5
   attackRadius: 0.6
   attackReach: 0.8
   attackHeightOffset: 0.6
