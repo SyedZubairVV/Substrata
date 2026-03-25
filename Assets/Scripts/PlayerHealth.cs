@@ -4,6 +4,8 @@ using System;
 
 public class PlayerHealth : MonoBehaviour
 {
+    public static PlayerHealth Instance;
+
     [Header("Health")]
     public int maxHealth = 5;
     public float invincibleTime = 0.5f;
@@ -26,7 +28,12 @@ public class PlayerHealth : MonoBehaviour
     private bool isDead;
     private bool isKnockedBack;
 
-    void Start()
+	private void Awake()
+	{
+		Instance = this;
+	}
+
+	void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
@@ -72,6 +79,13 @@ public class PlayerHealth : MonoBehaviour
     public void TakeDamage(int damage)
     {
         TakeDamage(damage, Vector2.left);
+    }
+
+    public void Heal(int healing)
+    {
+        if (isDead) return;
+        currentHealth = Mathf.Clamp(currentHealth +  healing, 0, maxHealth);
+        OnHealthChanged?.Invoke(currentHealth);
     }
 
     System.Collections.IEnumerator KnockbackRoutine(Vector2 direction)

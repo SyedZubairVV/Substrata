@@ -29,6 +29,9 @@ public class PlayerMovement : MonoBehaviour
     [Header("Torch Settings")]
     public float torchOffset = 0.8f;
 
+    [Header("Healing")]
+    public int healAmount = 20;
+
 
     // set by PlayerCombat to stop movement script overriding sprite direction
     [HideInInspector] public bool isAttacking = false;
@@ -60,6 +63,11 @@ public class PlayerMovement : MonoBehaviour
         if (InputSystem.actions["Torch"].WasPressedThisFrame())
         {
             PlaceTorch();
+        }
+
+        if (InputSystem.actions["Potion"].WasPressedThisFrame())
+        {
+            UsePotion();
         }
 
         // only flip sprite based on movement direction when NOT attacking
@@ -147,13 +155,32 @@ public class PlayerMovement : MonoBehaviour
 
     void PlaceTorch()
     {
-		// Determine direction: if flipX is true, player is facing Left (-1), otherwise Right (1)
-		float direction = sprite.flipX ? -1f : 1f;
+		// Check if player has any torches left
+		if (InventoryManager.Instance.torchCount > 0)
+		{
+			// Subtract one from the inventory, update UI
+            InventoryManager.Instance.UseTorch();
 
-		// Calculate the spawn position: Player position + (direction * offset)
-		Vector3 spawnPos = transform.position + new Vector3(direction * torchOffset, 1, 0);
+			// Spawn logic
+			float direction = sprite.flipX ? -1f : 1f;
+			Vector3 spawnPos = transform.position + new Vector3(direction * torchOffset, 1, 0);
+			Instantiate(torchPrefab, spawnPos, Quaternion.identity);
 
-		// Spawn the torch
-		Instantiate(torchPrefab, spawnPos, Quaternion.identity);
+			// TODO: Play a sound
+			// SoundManager.Instance.PlaySound(placeTorchClip, transform.position);
+		}
 	}
+
+    void UsePotion()
+    {
+        Debug.Log("Movement script UsePotion() called");
+        if (InventoryManager.Instance.potionCount > 0)
+        {
+            // Subtract from inventory, update UI
+            InventoryManager.Instance.UsePotion();
+
+            // Heal
+            PlayerHealth.Instance.Heal(healAmount);
+        }
+    }
 }
