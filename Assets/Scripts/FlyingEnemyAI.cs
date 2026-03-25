@@ -1,150 +1,172 @@
 using UnityEngine;
 using System.Collections;
 
-public class EnemyAI : MonoBehaviour
+public class FlyingEnemyAI : MonoBehaviour
 {
     [Header("Detection")]
     public float detectionRange = 5f;
-    public float attackRange = 2f;
+    public float attackRange = 1.5f;
 
     [Header("Movement")]
     public float chaseSpeed = 3f;
+    // how closely the enemy tries to match the player's position before attacking
+    // increase this if the enemy overshoots and jitters around the player
+    public float stoppingDistance = 1.2f;
+
+    [Header("Hovering")]
+    // when idle the enemy bobs up and down slightly to look alive
+    public float hoverAmplitude = 0.15f;
+    public float hoverSpeed = 2f;
 
     [Header("Stats")]
     public int maxHealth = 3;
     public int attackDamage = 1;
     public float attackCooldown = 1.2f;
 
-    [Header("Knockback")]
-    public float knockbackForce = 5f;
-    public float knockbackDuration = 0.15f;
-
     [Header("Attack Circle")]
-    public float attackRadius = 0.5f;
-    public float attackReach = 1.26f;
-    public float attackHeightOffset = -0.3f;
+    public float attackRadius = 0.6f;
+    public float attackReach = 0.8f;
+    public float attackHeightOffset = 0f;
 
     [Header("Contact Damage")]
     public int contactDamage = 1;
     public float contactDamageCooldown = 1f;
-    
-    [Header("Hit Flash")]
-    public Color hitFlashColor = new Color(1f, 0.3f, 0.3f, 0.7f); // light red, semi transparent
-    public float hitFlashDuration = 0.15f;
 
-    private SpriteRenderer spriteRenderer;
-    private Color originalColor;
+    [Header("Hit Flash")]
+    public Color hitFlashColor = new Color(1f, 0.3f, 0.3f, 0.7f);
+    public float hitFlashDuration = 0.15f;
 
     private int currentHealth;
     private Rigidbody2D rb;
     private Animator animator;
     private Transform player;
     private SpriteRenderer sprite;
+    private Color originalColor;
 
     private float attackTimer = 0f;
     private float contactDamageTimer = 0f;
     private bool isDead = false;
     private bool isAttacking = false;
-    private bool isKnockedBack = false;
-
-    // counts up while attacking — if it exceeds maxAttackStateDuration
-    // the enemy is forced out of the attack state regardless of animation events
     private float attackStateTimer = 0f;
-    public float maxAttackStateDuration = 0.4f;
-    private EnemySounds enemySounds;
+    public float maxAttackStateDuration = 1.5f;
+
+    // used for idle hovering
+    private Vector3 startPosition;
+    private float hoverTimer = 0f;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         sprite = GetComponent<SpriteRenderer>();
-        enemySounds = GetComponent<EnemySounds>();
-        spriteRenderer = sprite; // same reference, just used for color
-        originalColor = sprite.color; // save original so we can return to it
         player = GameObject.FindGameObjectWithTag("Player").transform;
+        originalColor = sprite.color;
         currentHealth = maxHealth;
+        startPosition = transform.position;
+
+        // flying enemies don't use gravity
+        rb.gravityScale = 0f;
     }
 
     void Update()
     {
         if (isDead) return;
-        if (isKnockedBack) return;
 
         attackTimer -= Time.deltaTime;
         contactDamageTimer -= Time.deltaTime;
+        hoverTimer += Time.deltaTime;
 
-        // --- ATTACK STATE TIMEOUT ---
-        // counts up every frame while isAttacking is true
-        // if the animation event OnAttackEnd never fires, this forces a reset
-        // maxAttackStateDuration should be slightly longer than your attack animation
+        // attack state timeout same as ground enemy
         if (isAttacking)
         {
             attackStateTimer += Time.deltaTime;
             if (attackStateTimer >= maxAttackStateDuration)
             {
-                Debug.Log("Attack timeout - forcing reset");
+                Debug.Log("Flying enemy attack timeout");
                 ForceResetAttack();
             }
         }
 
-        float horizDist = Mathf.Abs(player.position.x - transform.position.x);
+        // use full 2D distance since this enemy moves in both X and Y
+        float distToPlayer = Vector2.Distance(transform.position, player.position);
 
-        // --- ATTACK STATE ---
-        if (horizDist <= attackRange)
+        if (distToPlayer <= attackRange)
         {
-            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+            // stop moving and attack
+            rb.linearVelocity = Vector2.zero;
             animator.SetBool("isMoving", false);
             FacePlayer();
 
             if (!isAttacking && attackTimer <= 0f)
                 StartAttack();
         }
-        // --- CHASE STATE ---
-        else if (horizDist <= detectionRange)
+        else if (distToPlayer <= detectionRange)
         {
-            // play aggro sound the first time enemy spots the player
-            enemySounds?.PlayAggro();
-            
+            // chase player in both X and Y directions
             if (!isAttacking)
             {
-                animator.SetBool("isAttacking", false);
-                animator.SetBool("isMoving", true);
-
-                float dirX = player.position.x - transform.position.x;
-                float moveDir = dirX > 0 ? 1f : -1f;
-                rb.linearVelocity = new Vector2(moveDir * chaseSpeed, rb.linearVelocity.y);
-                sprite.flipX = moveDir < 0;
+                ChasePlayer();
             }
         }
-        // --- IDLE STATE ---
         else
         {
+            // idle — hover in place with a gentle bob
             if (!isAttacking)
             {
-                rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
                 animator.SetBool("isMoving", false);
+                Hover();
             }
         }
+    }
+
+    void ChasePlayer()
+    {
+        animator.SetBool("isMoving", true);
+        animator.SetBool("isAttacking", false);
+
+        Vector2 dir = (player.position - transform.position).normalized;
+
+        float dist = Vector2.Distance(transform.position, player.position);
+        if (dist > stoppingDistance)
+            rb.linearVelocity = dir * chaseSpeed;
+        else
+            rb.linearVelocity = Vector2.zero;
+
+        // update hover origin to current position so when the enemy
+        // goes idle it hovers from where it currently is, not where it started
+        startPosition = transform.position;
+
+        // reset hover timer so the bob starts smoothly from the new position
+        hoverTimer = 0f;
+
+        FacePlayer();
+    }
+
+    void Hover()
+    {
+        // gentle up and down bob when idle
+        float newY = startPosition.y + Mathf.Sin(hoverTimer * hoverSpeed) * hoverAmplitude;
+        transform.position = new Vector3(transform.position.x, newY, transform.position.z);
+        rb.linearVelocity = Vector2.zero;
     }
 
     void StartAttack()
     {
         isAttacking = true;
         attackTimer = attackCooldown;
-        attackStateTimer = 0f; // reset timer on every new attack
+        attackStateTimer = 0f;
         animator.SetBool("isAttacking", true);
-        enemySounds?.PlayAttack();
-        Debug.Log("Enemy attack started");
+        rb.linearVelocity = Vector2.zero;
+
+        // update hover origin here too
+        startPosition = transform.position;
     }
 
-    // single place to reset attack state
-    // called by both OnAttackEnd animation event AND the timeout
     void ForceResetAttack()
     {
         isAttacking = false;
         attackStateTimer = 0f;
         animator.SetBool("isAttacking", false);
-        Debug.Log("Enemy attack reset");
     }
 
     // --- ANIMATION EVENT --- hit frame
@@ -176,37 +198,23 @@ public class EnemyAI : MonoBehaviour
     // --- ANIMATION EVENT --- last frame
     public void OnAttackEnd()
     {
-        Debug.Log("Enemy OnAttackEnd fired");
         ForceResetAttack();
     }
 
     public void TakeDamage(int damage, Vector2 hitDirection)
     {
         if (isDead) return;
-
         currentHealth -= damage;
 
-        // flash red on hit
         StopCoroutine("HitFlash");
         StartCoroutine("HitFlash");
 
         if (!isAttacking)
-        {
             animator.SetTrigger("takingHit");
-            StartCoroutine(Knockback(hitDirection));
-        }
 
         if (currentHealth <= 0) Die();
     }
 
-    IEnumerator Knockback(Vector2 direction)
-    {
-        isKnockedBack = true;
-        rb.linearVelocity = new Vector2(direction.x * knockbackForce, knockbackForce * 0.5f);
-        yield return new WaitForSeconds(knockbackDuration);
-        isKnockedBack = false;
-        rb.linearVelocity = Vector2.zero;
-    }
     IEnumerator HitFlash()
     {
         sprite.color = hitFlashColor;
@@ -217,19 +225,19 @@ public class EnemyAI : MonoBehaviour
     void Die()
     {
         isDead = true;
-        
         animator.ResetTrigger("takingHit");
         animator.SetBool("isAttacking", false);
         animator.SetBool("isMoving", false);
         animator.SetBool("isDead", true);
-        enemySounds?.PlayDeath();
-        rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
-        rb.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
 
-        BoxCollider2D col = GetComponent<BoxCollider2D>();
-        if (col == null) col = GetComponentInChildren<BoxCollider2D>();
-        if (col != null)
-            col.enabled = false;
+        // re-enable gravity so the enemy falls to the ground on death
+        rb.gravityScale = 1f;
+        rb.linearVelocity = Vector2.zero;
+
+        // disable main collider so player doesn't hover on the corpse
+        // foot collider on child object stays active to stop it falling through floor
+        BoxCollider2D mainCol = GetComponent<BoxCollider2D>();
+        if (mainCol != null) mainCol.enabled = false;
 
         Destroy(gameObject, 5f);
     }
@@ -266,13 +274,6 @@ public class EnemyAI : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
         Gizmos.color = Color.blue;
-        Gizmos.DrawLine(
-            new Vector3(transform.position.x - attackRange, transform.position.y - 2f),
-            new Vector3(transform.position.x - attackRange, transform.position.y + 2f)
-        );
-        Gizmos.DrawLine(
-            new Vector3(transform.position.x + attackRange, transform.position.y - 2f),
-            new Vector3(transform.position.x + attackRange, transform.position.y + 2f)
-        );
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }
