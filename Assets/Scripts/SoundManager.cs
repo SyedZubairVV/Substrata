@@ -6,17 +6,48 @@ public class SoundManager : MonoBehaviour
 {
     public static SoundManager Instance;
 
-    void Awake()
+	[Header("Background Music Settings")]
+	public AudioClip bgmOnStart; // Drag your music file here in the Inspector
+	[Range(0f, 1f)] public float musicVolume = 0.5f;
+
+	private AudioSource musicSource;
+
+	void Awake()
     {
         // make this a singleton so any script can access it with SoundManager.Instance
         if (Instance == null)
-            Instance = this;
-        else
+		{
+			Instance = this;
+			// Create the music source automatically
+			musicSource = gameObject.AddComponent<AudioSource>();
+			musicSource.loop = true; // Music usually loops
+			musicSource.playOnAwake = false;
+		}
+		else
             Destroy(gameObject);
     }
 
-    // plays a single clip at a position in the world
-    public void PlaySound(AudioClip clip, Vector3 position, float volume = 1f)
+	private void Start()
+	{
+		if (bgmOnStart != null)
+        {
+            PlayMusic(bgmOnStart, musicVolume);
+        }
+	}
+
+	public void PlayMusic(AudioClip clip, float volume = 0.5f)
+	{
+		if (clip == null || musicSource.clip == clip) return;
+
+		musicSource.clip = clip;
+		musicSource.volume = volume;
+		musicSource.Play();
+	}
+
+	public void StopMusic() => musicSource.Stop();
+
+	// plays a single clip at a position in the world
+	public void PlaySound(AudioClip clip, Vector3 position, float volume = 1f)
     {
         if (clip == null) return;
         AudioSource.PlayClipAtPoint(clip, position, volume);
