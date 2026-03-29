@@ -33,59 +33,103 @@ public class PlayerHealth : MonoBehaviour
 		Instance = this;
 	}
 
-	void Start()
+    void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         playerMovement = GetComponent<PlayerMovement>();
         playerCombat = GetComponent<PlayerCombat>();
-
         sprite = GetComponent<SpriteRenderer>();
         if (sprite == null) sprite = GetComponentInChildren<SpriteRenderer>();
 
         currentHealth = maxHealth;
+
+        // tell UIManager the max health
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.SetMaxHealth(maxHealth);
+            UIManager.Instance.UpdateHealth(currentHealth, maxHealth);
+        }
+
         OnHealthChanged?.Invoke(currentHealth);
     }
 
-    void Update()
-    {
-        // test damage with P key
-        if (Keyboard.current.pKey.wasPressedThisFrame)
-            TakeDamage(1, Vector2.left);
-    }
-
-    // now accepts a hit direction so knockback pushes the right way
     public void TakeDamage(int damage, Vector2 hitDirection)
     {
         if (isInvincible || isDead) return;
-
         currentHealth = Mathf.Clamp(currentHealth - damage, 0, maxHealth);
         OnHealthChanged?.Invoke(currentHealth);
+
+        // update UI directly
+        UIManager.Instance?.UpdateHealth(currentHealth, maxHealth);
 
         if (currentHealth <= 0)
             Die();
         else
         {
-            // play hurt animation
             animator.SetTrigger("hurt");
-
             StartCoroutine(KnockbackRoutine(hitDirection));
             StartCoroutine(Invincibility());
         }
     }
 
-    // overload with no direction for backwards compatibility
-    // e.g. the P key test above, or anything that doesn't have a direction
-    public void TakeDamage(int damage)
-    {
-        TakeDamage(damage, Vector2.left);
-    }
-
-    public void Heal(int healing)
+    public void Heal(int amount)
     {
         if (isDead) return;
-        currentHealth = Mathf.Clamp(currentHealth +  healing, 0, maxHealth);
+        if (currentHealth >= maxHealth) return;
+        currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
         OnHealthChanged?.Invoke(currentHealth);
+        UIManager.Instance?.UpdateHealth(currentHealth, maxHealth);
+    }
+
+    void Die()
+    {
+        if (isDead) return;
+        isDead = true;
+
+        playerMovement.enabled = false;
+        if (playerCombat != null) playerCombat.enabled = false;
+
+        rb.linearVelocity = Vector2.zero;
+        rb.simulated = false;
+        animator.SetTrigger("die");
+
+        // show game over after death animation
+        Invoke(nameof(TriggerGameOver), 1.5f);
+    }
+
+    void TriggerGameOver()
+    {
+        Debug.Log("Calling GameOverManager");
+        GameOverManager.Instance?.ShowGameOver();
+        Debug.Log("Calling GameOverManager");
+
+    }
+
+    public void ResetPlayer()
+    {
+        isDead = false;
+        isInvincible = false;
+        isKnockedBack = false;
+        currentHealth = maxHealth;
+        OnHealthChanged?.Invoke(currentHealth);
+
+        if (rb != null) rb.simulated = true;
+        if (playerMovement != null) playerMovement.enabled = true;
+        if (playerCombat != null) playerCombat.enabled = true;
+
+        StopAllCoroutines();
+
+        if (animator != null)
+        {
+            animator.ResetTrigger("die");
+            animator.ResetTrigger("hurt");
+            animator.SetBool("isDead", false);
+        }
+
+        // hide game over and update UI
+        UIManager.Instance?.HideGameOver();
+        UIManager.Instance?.UpdateHealth(currentHealth, maxHealth);
     }
 
     System.Collections.IEnumerator KnockbackRoutine(Vector2 direction)
@@ -108,24 +152,6 @@ public class PlayerHealth : MonoBehaviour
             playerMovement.enabled = true;
     }
 
-    void Die()
-    {
-        if (isDead) return;
-        isDead = true;
-
-        // disable all control
-        playerMovement.enabled = false;
-        if (playerCombat != null) playerCombat.enabled = false;
-
-        // stop all movement
-        rb.linearVelocity = Vector2.zero;
-        rb.simulated = false;
-
-        // play death animation and freeze there
-        animator.SetTrigger("die");
-
-        Debug.Log("Player died");
-    }
 
     System.Collections.IEnumerator Invincibility()
     {

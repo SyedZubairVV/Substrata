@@ -114,10 +114,10 @@ public class PlayerMovement : MonoBehaviour
 
     bool IsGrounded()
     {
-        // Check if ground collider overlaps with ground layer
-        return Physics2D.OverlapArea(
-            groundCheck.bounds.min,
-            groundCheck.bounds.max,
+        return Physics2D.OverlapBox(
+            groundCheck.bounds.center,
+            groundCheck.bounds.size,
+            0f,
             groundLayer
         );
     }
@@ -174,13 +174,26 @@ public class PlayerMovement : MonoBehaviour
     void UsePotion()
     {
         Debug.Log("Movement script UsePotion() called");
-        if (InventoryManager.Instance.potionCount > 0)
-        {
-            // Subtract from inventory, update UI
-            InventoryManager.Instance.UsePotion();
 
-            // Heal
-            PlayerHealth.Instance.Heal(healAmount);
+        if (InventoryManager.Instance.potionCount <= 0)
+            return;
+
+        // 🔥 Check if player exists
+        if (PlayerHealth.Instance == null)
+            return;
+
+        int current = PlayerHealth.Instance.GetCurrentHealth();
+        int max = PlayerHealth.Instance.maxHealth;
+
+        // 🔥 IMPORTANT: Don't allow potion use at full health
+        if (current >= max)
+        {
+            Debug.Log("Health already full - potion not used");
+            return;
         }
+
+        // ✅ Now it's safe to use potion
+        InventoryManager.Instance.UsePotion();
+        PlayerHealth.Instance.Heal(healAmount);
     }
 }

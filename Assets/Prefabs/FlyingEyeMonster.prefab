@@ -211,7 +211,7 @@ MonoBehaviour:
   hoverAmplitude: 0.15
   hoverSpeed: 2
   maxHealth: 10
-  attackDamage: 1
+  attackDamage: 10
   attackCooldown: 0.5
   attackRadius: 0.8
   attackReach: 1
@@ -220,6 +220,7 @@ MonoBehaviour:
   contactDamageCooldown: 1
   hitFlashColor: {r: 1, g: 0.3, b: 0.3, a: 0.7}
   hitFlashDuration: 0.15
+  goldDropAmount: 10
   maxAttackStateDuration: 0.4
 --- !u!114 &3048823801713895185
 MonoBehaviour:

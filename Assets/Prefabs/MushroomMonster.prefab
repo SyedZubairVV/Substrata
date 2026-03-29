@@ -208,7 +208,7 @@ MonoBehaviour:
   attackRange: 1.5
   chaseSpeed: 3
   maxHealth: 10
-  attackDamage: 5
+  attackDamage: 15
   attackCooldown: 0.5
   knockbackForce: 5
   knockbackDuration: 0.15
@@ -219,6 +219,7 @@ MonoBehaviour:
   contactDamageCooldown: 1
   hitFlashColor: {r: 1, g: 0.3, b: 0.3, a: 0.7}
   hitFlashDuration: 0.15
+  goldDropAmount: 15
   maxAttackStateDuration: 0.4
 --- !u!114 &3253539511101926232
 MonoBehaviour:

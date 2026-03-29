@@ -27,11 +27,27 @@ public class LadderManager : MonoBehaviour
 		{
 			if (currentScene == "Surface")
 			{
+				SceneSpawnManager.spawnPointName = "Spawn_Cave_Entrance";
 				gameSceneManager.EnterCave();
 			}
 			else if (currentScene == "Cave")
 			{
+				SceneSpawnManager.spawnPointName = "Spawn_Surface_Entrance";
 				gameSceneManager.ExitCave();
+			}
+			
+			// TESTING
+			if (currentScene == "Surface_Hermit")
+			{
+				SceneSpawnManager.spawnPointName = "Spawn_TestCave_Entrance";
+
+				SceneManager.LoadScene("Test_Cave");
+			}
+			else if (currentScene == "Test_Cave")
+			{
+				SceneSpawnManager.spawnPointName = "Spawn_SurfaceHermit_Entrance";
+
+				SceneManager.LoadScene("Surface_Hermit");
 			}
 		}
     }

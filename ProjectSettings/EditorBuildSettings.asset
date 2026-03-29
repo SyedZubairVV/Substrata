@@ -17,6 +17,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Cave.unity
     guid: ef4633cfdbe1fb34b88ebda013ac4f24
+  - enabled: 1
+    path: Assets/Scenes/Surface_Hermit.unity
+    guid: 1e31ff51a888e8d4b81a66f95ccd007d
+  - enabled: 1
+    path: Assets/Scenes/Test_Cave.unity
+    guid: 57302479b4a57414b99becae76834f5e
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 0c025ca7e9c487b45ac201eba0f55f50, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
