@@ -5013,7 +5013,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 0
-  orthographic size: 6.3854165
+  orthographic size: 6.375
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -5146,7 +5146,7 @@ Transform:
   m_GameObject: {fileID: 1704878518}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 9.48315, y: 0.3433696, z: -10}
+  m_LocalPosition: {x: 9.485249, y: 0.3433696, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5997,8 +5997,30 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1929320836998674019, guid: f97f4d36a47a56a40bf6fc8f2b97fc54, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7739979559978323479}
   m_SourcePrefab: {fileID: 100100000, guid: f97f4d36a47a56a40bf6fc8f2b97fc54, type: 3}
+--- !u!1 &7739979559978323478 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1929320836998674019, guid: f97f4d36a47a56a40bf6fc8f2b97fc54, type: 3}
+  m_PrefabInstance: {fileID: 7739979559978323477}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7739979559978323479
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7739979559978323478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e13eaf1f381ae3540b31f59621c6f8f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerObjectManager
+  disabledSceneName: Surface
+  childObjectName: Headlamp
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
