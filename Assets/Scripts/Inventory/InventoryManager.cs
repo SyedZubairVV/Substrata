@@ -1,74 +1,96 @@
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class InventoryManager : MonoBehaviour
 {
-	public static InventoryManager Instance;
+    public static InventoryManager Instance;
 
-	[Header("Item Counts")]
-	public int torchCount = 0;
-	public int potionCount = 0;
+    public int torchCount = 0;
+    public int potionCount = 0;
 
-	[Header("UI Text References")]
-	public TextMeshProUGUI torchText; 
-	public TextMeshProUGUI potionText;
+    public List<LootItem> valuables = new List<LootItem>();
 
-	public List<LootItem> valuables = new List<LootItem>();
+    [System.Serializable]
+    public class LootItem
+    {
+        public string name;
+        public int goldValue;
+        public LootItem(string n, int v) { name = n; goldValue = v; }
+    }
 
-	[System.Serializable]
-	public class LootItem
-	{
-		public string name;
-		public int goldValue;
-		public LootItem(string n, int v) { name = n; goldValue = v; }
-	}
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
 
-	void Awake()
-	{
-		Instance = this;
-	}
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
 
-	void Start()
-	{
-		UpdateUI();
-	}
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
 
-	public void AddTorch(int amount = 1)
-	{
-		torchCount += amount;
-		UpdateUI();
-	}
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // 🔥 Force UI refresh after scene load
+        UpdateUI();
+    }
 
-	public void AddPotion(int amount = 1)
-	{
-		potionCount += amount;
-		UpdateUI();
-	}
+    public void AddTorch(int amount = 1)
+    {
+        torchCount += amount;
+        UpdateUI();
+    }
 
-	public void AddLoot(string name, int price)
-	{
-		valuables.Add(new LootItem(name, price));
-		Debug.Log($"Picked up {name} worth {price} gold!");
-	}
+    public void AddPotion(int amount = 1)
+    {
+        potionCount += amount;
+        UpdateUI();
+    }
 
-	public void UseTorch()
-	{
-		torchCount--;
-		UpdateUI();
-		Debug.Log("Torch Used!");
-	}
+    public void UseTorch()
+    {
+        if (torchCount <= 0) return;
+        torchCount--;
+        UpdateUI();
+    }
 
-	public void UsePotion()
-	{
-		potionCount--;
-		UpdateUI();
-		Debug.Log("Potion Used!");
-	}
+    public void UsePotion()
+    {
+        if (potionCount <= 0) return;
+        potionCount--;
+        UpdateUI();
+    }
 
-	public void UpdateUI()
-	{
-		torchText.text = torchCount.ToString();
-		potionText.text = potionCount.ToString();
-	}
+    public void AddLoot(string name, int price)
+    {
+        valuables.Add(new LootItem(name, price));
+    }
+
+    public void UpdateUI()
+    {
+        UIManager.Instance?.UpdateTorches(torchCount);
+        UIManager.Instance?.UpdatePotions(potionCount);
+    }
+
+    public void ResetInventory()
+    {
+        torchCount = 0;
+        potionCount = 0;
+        valuables.Clear();
+        UpdateUI();
+    }
 }

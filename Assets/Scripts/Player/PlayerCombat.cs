@@ -36,6 +36,22 @@ public class PlayerCombat : MonoBehaviour
     private float comboCooldownTimer = 0f;
     private PlayerSounds playerSounds;
 
+    public static PlayerCombat Instance;
+
+    
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+        
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -44,6 +60,8 @@ public class PlayerCombat : MonoBehaviour
         playerSounds = GetComponent<PlayerSounds>();
         originalMoveSpeed = playerMovement.moveSpeed;
         mainCamera = Camera.main;
+        if (mainCamera == null)
+            Debug.LogError("No main camera found!");
     }
 
     void Update()
@@ -91,6 +109,13 @@ public class PlayerCombat : MonoBehaviour
 
     void FaceMouseDirection()
     {
+        // refresh camera reference in case it changed after scene transition
+        if (mainCamera == null)
+            mainCamera = Camera.main;
+
+        // guard in case camera still isn't found
+        if (mainCamera == null) return;
+
         Vector3 mouseWorld = mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         sprite.flipX = mouseWorld.x < transform.position.x;
     }
@@ -149,32 +174,42 @@ public class PlayerCombat : MonoBehaviour
         {
             if (hit.transform.root == transform.root) continue;
 
-            int damage = attackDamage[currentCombo - 1];
+            // 🔥 BASE DAMAGE from combo
+            int baseDamage = attackDamage[currentCombo - 1];
+
+            // 🔥 APPLY PLAYER STATS MULTIPLIER
+            int finalDamage = baseDamage;
+
+            if (PlayerStats.Instance != null)
+            {
+                finalDamage *= PlayerStats.Instance.swordDamage;
+            }
+
             Vector2 hitDir = (hit.transform.position - transform.position).normalized;
 
-            // check for ground enemy
+            // ground enemy
             EnemyAI groundEnemy = hit.GetComponent<EnemyAI>();
             if (groundEnemy == null) groundEnemy = hit.GetComponentInParent<EnemyAI>();
             if (groundEnemy == null) groundEnemy = hit.GetComponentInChildren<EnemyAI>();
 
             if (groundEnemy != null)
             {
-                groundEnemy.TakeDamage(damage, hitDir);
+                groundEnemy.TakeDamage(finalDamage, hitDir);
                 playerSounds?.PlayHitImpact();
-                Debug.Log($"Hit ground enemy for {damage} damage");
+                Debug.Log($"Hit ground enemy for {finalDamage} damage");
                 return;
             }
 
-            // check for flying enemy
+            // flying enemy
             FlyingEnemyAI flyingEnemy = hit.GetComponent<FlyingEnemyAI>();
             if (flyingEnemy == null) flyingEnemy = hit.GetComponentInParent<FlyingEnemyAI>();
             if (flyingEnemy == null) flyingEnemy = hit.GetComponentInChildren<FlyingEnemyAI>();
 
             if (flyingEnemy != null)
             {
-                flyingEnemy.TakeDamage(damage, hitDir);
+                flyingEnemy.TakeDamage(finalDamage, hitDir);
                 playerSounds?.PlayHitImpact();
-                Debug.Log($"Hit flying enemy for {damage} damage");
+                Debug.Log($"Hit flying enemy for {finalDamage} damage");
                 return;
             }
         }

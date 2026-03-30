@@ -26,6 +26,13 @@ public class ElevatorRepairTilemap : MonoBehaviour
 	private bool playerInRange;
 	private bool isFixed;
 	private bool elevatorUp;
+	void Start()
+	{
+		if (player == null)
+		{
+			player = GameObject.FindGameObjectWithTag("Player");
+		}
+	}
 
 	void Update()
 	{
@@ -125,7 +132,17 @@ public class ElevatorRepairTilemap : MonoBehaviour
 			}
 		}
 
-		player.GetComponent<Rigidbody2D>().position = new Vector2(newX, newY);
+		//player.GetComponent<Rigidbody2D>().position = new Vector2(newX, newY);
+		if (player == null)
+		{
+			player = GameObject.FindGameObjectWithTag("Player");
+		}
+
+		if (player != null)
+		{
+			player.transform.position = new Vector2(newX, newY);
+		}
+		
 		yield return new WaitForSeconds(1f); // Drama pause
 
 		// 3. Fade Back In
