@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -41,7 +42,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isDashing;
     private bool canDash = true;
 
-    void Update()
+	void Update()
     {
         // Read movement input
         moveInput = InputSystem.actions["Move"].ReadValue<Vector2>();
@@ -60,7 +61,7 @@ public class PlayerMovement : MonoBehaviour
             StartCoroutine(Dash());
         }
 
-        if (InputSystem.actions["Torch"].WasPressedThisFrame())
+        if (InputSystem.actions["Torch"].WasPressedThisFrame() && SceneManager.GetActiveScene().name != "Surface")
         {
             PlaceTorch();
         }
@@ -80,8 +81,8 @@ public class PlayerMovement : MonoBehaviour
                 sprite.flipX = true;
         }
 
-        // Update animations
-        animator.SetBool("isRunning", Mathf.Abs(moveInput.x) > 0.01f);
+		// Update animations
+		animator.SetBool("isRunning", Mathf.Abs(moveInput.x) > 0.01f);
         animator.SetBool("isGrounded", isGrounded);
         animator.SetFloat("yVelocity", body.linearVelocity.y);
         animator.SetBool("isDashing", isDashing);
