@@ -452,7 +452,7 @@ MonoBehaviour:
   timeBetweenHits: 0
   comboCooldown: 0.5
   attackRadius: 0.6
-  attackReach: 0.8
+  attackReach: 1.1
   attackHeightOffset: 0.6
   attackDamage: 0100000001000000010000000200000003000000
   attackMoveSpeedMultiplier: 0.4
