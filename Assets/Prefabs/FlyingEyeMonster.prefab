@@ -204,9 +204,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a1ace5545d180c4295e515c9156a6d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  detectionRange: 9
+  detectionRange: 10
   attackRange: 1.5
-  chaseSpeed: 4
+  chaseSpeed: 6
   stoppingDistance: 1.2
   hoverAmplitude: 0.15
   hoverSpeed: 2
@@ -216,7 +216,7 @@ MonoBehaviour:
   attackRadius: 0.8
   attackReach: 1
   attackHeightOffset: 0
-  contactDamage: 1
+  contactDamage: 3
   contactDamageCooldown: 1
   hitFlashColor: {r: 1, g: 0.3, b: 0.3, a: 0.7}
   hitFlashDuration: 0.15
