@@ -76,7 +76,6 @@ public class PlayerCombat : MonoBehaviour
             fallbackTimer -= Time.deltaTime;
             if (fallbackTimer <= 0f)
             {
-                Debug.Log("Fallback reset triggered");
                 ResetAttack();
             }
         }
@@ -103,7 +102,6 @@ public class PlayerCombat : MonoBehaviour
             // only queue next hit if the between-hit cooldown has passed
             if (hitCooldownTimer > 0f) return;
             comboQueued = true;
-            Debug.Log("Combo queued");
         }
     }
 
@@ -142,11 +140,9 @@ public class PlayerCombat : MonoBehaviour
         hitCooldownTimer = timeBetweenHits;
 
         fallbackTimer = 1f;
-
-        Debug.Log($"Attack {comboStep} started");
     }
 
-    // --- ANIMATION EVENT --- ~60% through each attack animation
+    // ANIMATION EVENT -- 60% through each attack animation
     public void OnComboWindowOpen()
     {
         comboWindowTimer = comboWindowTime;
@@ -154,12 +150,11 @@ public class PlayerCombat : MonoBehaviour
         if (comboQueued && currentCombo < 5 && hitCooldownTimer <= 0f)
         {
             FaceMouseDirection();
-            Debug.Log($"Chaining to attack {currentCombo + 1}");
             StartAttack(currentCombo + 1);
         }
     }
 
-    // --- ANIMATION EVENT --- hit frame of each attack animation
+    // ANIMATION EVENT -- hit frame of each attack animation
     public void DealAttackDamage()
     {
         float facingDir = sprite.flipX ? -1f : 1f;
@@ -174,10 +169,10 @@ public class PlayerCombat : MonoBehaviour
         {
             if (hit.transform.root == transform.root) continue;
 
-            // 🔥 BASE DAMAGE from combo
+            // BASE DAMAGE from combo
             int baseDamage = attackDamage[currentCombo - 1];
 
-            // 🔥 APPLY PLAYER STATS MULTIPLIER
+            // APPLY PLAYER STATS MULTIPLIER
             int finalDamage = baseDamage;
 
             if (PlayerStats.Instance != null)
@@ -196,7 +191,6 @@ public class PlayerCombat : MonoBehaviour
             {
                 groundEnemy.TakeDamage(finalDamage, hitDir);
                 playerSounds?.PlayHitImpact();
-                Debug.Log($"Hit ground enemy for {finalDamage} damage");
                 return;
             }
 
@@ -209,17 +203,14 @@ public class PlayerCombat : MonoBehaviour
             {
                 flyingEnemy.TakeDamage(finalDamage, hitDir);
                 playerSounds?.PlayHitImpact();
-                Debug.Log($"Hit flying enemy for {finalDamage} damage");
                 return;
             }
         }
     }
 
-    // --- ANIMATION EVENT --- last frame of each attack animation
+    // ANIMATION EVENT -- last frame of each attack animation
     public void OnAttackEnd()
     {
-        Debug.Log($"OnAttackEnd fired for attack {currentCombo}");
-
         animator.SetBool($"attack{currentCombo}", false);
 
         if (comboQueued && currentCombo < 5 && hitCooldownTimer <= 0f)
@@ -255,14 +246,11 @@ public class PlayerCombat : MonoBehaviour
         if (wasFullCombo)
         {
             comboCooldownTimer = comboCooldown;
-            Debug.Log("Full combo done - applying combo cooldown");
         }
         else
         {
             hitCooldownTimer = timeBetweenHits;
         }
-
-        Debug.Log("Attack reset");
     }
 
     void OnDrawGizmosSelected()

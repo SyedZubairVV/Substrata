@@ -12,6 +12,7 @@ public class GameOverManager : MonoBehaviour
 
     void Awake()
     {
+        // Singleton pattern — persist across scenes
         if (Instance == null)
         {
             Instance = this;
@@ -28,39 +29,35 @@ public class GameOverManager : MonoBehaviour
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
-
     void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    // Called by GameOverPanelRef
+    // Called by GameOverPanelRef on the panel's own Start() to register itself
     public void RegisterPanel(GameObject panel)
     {
         gameOverPanel = panel;
-        //gameOverPanel.SetActive(false);
-        Debug.Log("GameOverPanel registered");
     }
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // Always restore time scale on any scene load
         Time.timeScale = 1f;
         StartCoroutine(InitAfterSceneLoad(scene));
     }
 
     IEnumerator InitAfterSceneLoad(Scene scene)
     {
-        // wait for UI + Player to initialize
+        // Wait two frames for UI and Player objects to fully initialize
         yield return null;
         yield return null;
 
-        // Toggle HUD visibility
+        // Hide HUD on the main menu, show it everywhere else
         if (hudCanvas != null)
-        {
             hudCanvas.SetActive(scene.name != mainMenuSceneName);
-        }
 
-        // Reset player in gameplay scenes
+        // Reset player state when entering a gameplay scene
         if (scene.name != mainMenuSceneName)
         {
             PlayerHealth ph = FindFirstObjectByType<PlayerHealth>();
@@ -71,13 +68,11 @@ public class GameOverManager : MonoBehaviour
 
     public void ShowGameOver()
     {
-        Debug.Log("ShowGameOver CALLED");
-
-        // if reference is lost find it again
+        // Try to recover the panel reference if it was lost (e.g. after scene reload)
         if (gameOverPanel == null)
             gameOverPanel = GameObject.Find("GameOverPanel");
 
-        // if still null search inactive objects too
+        // Fall back to searching inactive objects if still not found
         if (gameOverPanel == null)
         {
             GameOverPanelRef panelRef = FindFirstObjectByType<GameOverPanelRef>(FindObjectsInactive.Include);
@@ -89,24 +84,7 @@ public class GameOverManager : MonoBehaviour
         {
             gameOverPanel.SetActive(true);
             Time.timeScale = 0f;
-            Debug.Log("Game Over Panel shown");
         }
-        else
-        {
-            Debug.LogError("GameOverPanel still not found!");
-        }
-    }
-
-    IEnumerator ShowGameOverRoutine()
-    {
-        // 🔥 wait until panel registers (fixes your bug)
-        while (gameOverPanel == null)
-        {
-            yield return null;
-        }
-
-        gameOverPanel.SetActive(true);
-        Time.timeScale = 0f;
     }
 
     public void ReturnToMenu()
@@ -125,6 +103,7 @@ public class GameOverManager : MonoBehaviour
 
     void ResetRun()
     {
+        // Wipe all persistent run state so the next run starts clean
         if (InventoryManager.Instance != null)
             InventoryManager.Instance.ResetInventory();
 

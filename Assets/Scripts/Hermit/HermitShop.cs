@@ -32,7 +32,7 @@ public class HermitShop : MonoBehaviour
         buyTorchButton.onClick.AddListener(BuyTorch);
         upgradeSwordButton.onClick.AddListener(UpgradeSword);
 
-        RefreshUI(); // 🔥 important
+        RefreshUI();
     }
 
     public void RefreshUI()

@@ -45,6 +45,7 @@ public class FlyingEnemyAI : MonoBehaviour
     private Transform player;
     private SpriteRenderer sprite;
     private Color originalColor;
+    
 
     private float attackTimer = 0f;
     private float contactDamageTimer = 0f;
@@ -52,6 +53,7 @@ public class FlyingEnemyAI : MonoBehaviour
     private bool isAttacking = false;
     private float attackStateTimer = 0f;
     public float maxAttackStateDuration = 1.5f;
+    private EnemySounds enemySounds;
 
     // used for idle hovering
     private Vector3 startPosition;
@@ -63,12 +65,19 @@ public class FlyingEnemyAI : MonoBehaviour
         animator = GetComponent<Animator>();
         sprite = GetComponent<SpriteRenderer>();
         player = GameObject.FindGameObjectWithTag("Player").transform;
+        enemySounds = GetComponent<EnemySounds>();
         originalColor = sprite.color;
         currentHealth = maxHealth;
         startPosition = transform.position;
 
         // flying enemies don't use gravity
         rb.gravityScale = 0f;
+        
+        // Stop the enemy body from physically pushing the player
+        Collider2D enemyCol = GetComponent<Collider2D>();
+        Collider2D playerCol = player.GetComponentInChildren<Collider2D>();
+        if (enemyCol != null && playerCol != null)
+            Physics2D.IgnoreCollision(enemyCol, playerCol);
     }
 
     void Update()
@@ -79,7 +88,7 @@ public class FlyingEnemyAI : MonoBehaviour
         contactDamageTimer -= Time.deltaTime;
         hoverTimer += Time.deltaTime;
 
-        // attack state timeout same as ground enemy
+        // attack state timeout
         if (isAttacking)
         {
             attackStateTimer += Time.deltaTime;
@@ -126,6 +135,7 @@ public class FlyingEnemyAI : MonoBehaviour
     {
         animator.SetBool("isMoving", true);
         animator.SetBool("isAttacking", false);
+        enemySounds?.PlayAggro();
 
         Vector2 dir = (player.position - transform.position).normalized;
 
@@ -156,6 +166,7 @@ public class FlyingEnemyAI : MonoBehaviour
     void StartAttack()
     {
         isAttacking = true;
+        enemySounds?.PlayAttack();
         attackTimer = attackCooldown;
         attackStateTimer = 0f;
         animator.SetBool("isAttacking", true);
@@ -172,7 +183,7 @@ public class FlyingEnemyAI : MonoBehaviour
         animator.SetBool("isAttacking", false);
     }
 
-    // --- ANIMATION EVENT --- hit frame
+    // ANIMATION EVENT -- hit frame
     public void DealAttackDamage()
     {
         float facingDir = sprite.flipX ? -1f : 1f;
@@ -198,7 +209,7 @@ public class FlyingEnemyAI : MonoBehaviour
         }
     }
 
-    // --- ANIMATION EVENT --- last frame
+    // ANIMATION EVENT -- last frame
     public void OnAttackEnd()
     {
         ForceResetAttack();
@@ -228,6 +239,7 @@ public class FlyingEnemyAI : MonoBehaviour
     void Die()
     {
         isDead = true;
+        enemySounds?.PlayDeath();
         animator.ResetTrigger("takingHit");
         animator.SetBool("isAttacking", false);
         animator.SetBool("isMoving", false);

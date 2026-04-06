@@ -76,10 +76,8 @@ public class EnemyAI : MonoBehaviour
         attackTimer -= Time.deltaTime;
         contactDamageTimer -= Time.deltaTime;
 
-        // --- ATTACK STATE TIMEOUT ---
         // counts up every frame while isAttacking is true
         // if the animation event OnAttackEnd never fires, this forces a reset
-        // maxAttackStateDuration should be slightly longer than your attack animation
         if (isAttacking)
         {
             attackStateTimer += Time.deltaTime;
@@ -92,7 +90,7 @@ public class EnemyAI : MonoBehaviour
 
         float horizDist = Mathf.Abs(player.position.x - transform.position.x);
 
-        // --- ATTACK STATE ---
+        // ATTACK STATE
         if (horizDist <= attackRange)
         {
             rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
@@ -102,7 +100,7 @@ public class EnemyAI : MonoBehaviour
             if (!isAttacking && attackTimer <= 0f)
                 StartAttack();
         }
-        // --- CHASE STATE ---
+        // CHASE STATE
         else if (horizDist <= detectionRange)
         {
             // play aggro sound the first time enemy spots the player
@@ -119,7 +117,7 @@ public class EnemyAI : MonoBehaviour
                 sprite.flipX = moveDir < 0;
             }
         }
-        // --- IDLE STATE ---
+        // IDLE STATE
         else
         {
             if (!isAttacking)
@@ -137,7 +135,6 @@ public class EnemyAI : MonoBehaviour
         attackStateTimer = 0f; // reset timer on every new attack
         animator.SetBool("isAttacking", true);
         enemySounds?.PlayAttack();
-        Debug.Log("Enemy attack started");
     }
 
     // single place to reset attack state
@@ -147,10 +144,9 @@ public class EnemyAI : MonoBehaviour
         isAttacking = false;
         attackStateTimer = 0f;
         animator.SetBool("isAttacking", false);
-        Debug.Log("Enemy attack reset");
     }
 
-    // --- ANIMATION EVENT --- hit frame
+    // ANIMATION EVENT -- hit frame
     public void DealAttackDamage()
     {
         float facingDir = sprite.flipX ? -1f : 1f;
@@ -176,7 +172,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    // --- ANIMATION EVENT --- last frame
+    // ANIMATION EVENT -- last frame
     public void OnAttackEnd()
     {
         Debug.Log("Enemy OnAttackEnd fired");

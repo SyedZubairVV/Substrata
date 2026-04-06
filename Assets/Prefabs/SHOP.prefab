@@ -1056,7 +1056,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Press [T] to talk
+  m_text: 'Press [F] to talk
 
 '
   m_isRightToLeft: 0

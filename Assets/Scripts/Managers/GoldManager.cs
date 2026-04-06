@@ -3,20 +3,24 @@ using UnityEngine;
 public class GoldManager : MonoBehaviour
 {
     public static GoldManager Instance;
+
     public int gold = 0;
+
+    // Starting gold amount for a new run
+    private const int startingGold = 25;
 
     void Awake()
     {
+        // Singleton pattern — persist across scenes
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            gold = 25;
+            gold = startingGold;
         }
         else
         {
             Destroy(gameObject);
-            return;
         }
     }
 
@@ -26,15 +30,15 @@ public class GoldManager : MonoBehaviour
         UpdateUI();
     }
 
+    // Returns true if the player had enough gold to spend, false otherwise
     public bool SpendGold(int amount)
     {
-        if (gold >= amount)
-        {
-            gold -= amount;
-            UpdateUI();
-            return true;
-        }
-        return false;
+        if (gold < amount)
+            return false;
+
+        gold -= amount;
+        UpdateUI();
+        return true;
     }
 
     public void UpdateUI()
@@ -44,7 +48,7 @@ public class GoldManager : MonoBehaviour
 
     public void ResetGold()
     {
-        gold = 25;
+        gold = startingGold;
         UpdateUI();
     }
 }

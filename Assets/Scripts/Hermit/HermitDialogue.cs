@@ -73,10 +73,8 @@ public class HermitDialogue : MonoBehaviour
         if (interactPromptObject != null)
             interactPromptObject.SetActive(playerInRange && !isDialogueOpen && !shopPanel.activeSelf);
 
-        if (Input.GetKeyDown(KeyCode.T))
+        if (Input.GetKeyDown(KeyCode.F))
         {
-            Debug.Log($"T pressed | inRange: {playerInRange} | dialogueOpen: {isDialogueOpen} | shopOpen: {shopPanel.activeSelf}");
-
             if (playerInRange && !isDialogueOpen && !shopPanel.activeSelf)
                 OpenDialogue();
             else if (isDialogueOpen)
@@ -94,7 +92,6 @@ public class HermitDialogue : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerInRange = true;
-            Debug.Log("Player entered hermit trigger");
         }
     }
 
@@ -125,14 +122,17 @@ public class HermitDialogue : MonoBehaviour
         speakerNameText.text = "Hermit";
 
         // disable player control while talking
-        if (playerMovement != null) playerMovement.enabled = false;
+        if (playerMovement != null)
+        {
+            playerMovement.enabled = false;
+            playerMovement.body.linearVelocity = Vector2.zero;
+            playerMovement.animator.SetBool("isRunning", false);
+            playerMovement.animator.SetBool("isDashing", false);
+        }
         if (playerCombat != null) playerCombat.enabled = false;
-
-        Debug.Log($"Opening dialogue | introComplete: {introComplete}");
 
         if (!introComplete)
         {
-            Debug.Log($"Showing intro line 0: {introDialogue[0]}");
             ShowLine(introDialogue[currentLineIndex]);
         }
         else
@@ -169,7 +169,7 @@ public class HermitDialogue : MonoBehaviour
 
         isTyping = false;
         skipTyping = false;
-        promptText.text = "Press T to continue";
+        promptText.text = "Press F to continue";
     }
 
     void AdvanceDialogue()
@@ -177,13 +177,11 @@ public class HermitDialogue : MonoBehaviour
         if (!introComplete)
         {
             currentLineIndex++;
-            Debug.Log($"Advancing to line {currentLineIndex} of {introDialogue.Length}");
 
             if (currentLineIndex < introDialogue.Length)
                 ShowLine(introDialogue[currentLineIndex]);
             else
             {
-                Debug.Log("Intro complete, opening shop");
                 introComplete = true;
                 PlayerPrefs.SetInt("HermitIntroComplete", 1);
                 CloseDialogueOpenShop();

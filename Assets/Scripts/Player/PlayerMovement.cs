@@ -166,34 +166,28 @@ public class PlayerMovement : MonoBehaviour
 			float direction = sprite.flipX ? -1f : 1f;
 			Vector3 spawnPos = transform.position + new Vector3(direction * torchOffset, 1, 0);
 			Instantiate(torchPrefab, spawnPos, Quaternion.identity);
-
-			// TODO: Play a sound
-			// SoundManager.Instance.PlaySound(placeTorchClip, transform.position);
 		}
 	}
 
     void UsePotion()
     {
-        Debug.Log("Movement script UsePotion() called");
-
         if (InventoryManager.Instance.potionCount <= 0)
             return;
 
-        // 🔥 Check if player exists
+        // Check if player exists
         if (PlayerHealth.Instance == null)
             return;
 
         int current = PlayerHealth.Instance.GetCurrentHealth();
         int max = PlayerHealth.Instance.maxHealth;
 
-        // 🔥 IMPORTANT: Don't allow potion use at full health
+        // Don't allow potion use at full health
         if (current >= max)
         {
-            Debug.Log("Health already full - potion not used");
             return;
         }
 
-        // ✅ Now it's safe to use potion
+        // Now it's safe to use potion
         InventoryManager.Instance.UsePotion();
         PlayerHealth.Instance.Heal(healAmount);
     }

@@ -40,7 +40,7 @@ public class ControlsPopup : MonoBehaviour
         if (interactPromptObject != null)
             interactPromptObject.SetActive(playerInRange && !isOpen);
 
-        if (Input.GetKeyDown(KeyCode.T) && playerInRange)
+        if (Input.GetKeyDown(KeyCode.F) && playerInRange)
         {
             if (!isOpen)
                 OpenPopup();

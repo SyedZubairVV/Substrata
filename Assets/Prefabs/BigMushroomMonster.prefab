@@ -205,13 +205,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   detectionRange: 10
-  attackRange: 2
+  attackRange: 2.5
   chaseSpeed: 3
-  maxHealth: 20
+  maxHealth: 30
   attackDamage: 20
-  attackCooldown: 1
-  knockbackForce: 5
-  knockbackDuration: 0.15
+  attackCooldown: 0.5
+  knockbackForce: 0
+  knockbackDuration: 0
   attackRadius: 2
   attackReach: 1.45
   attackHeightOffset: -0.3

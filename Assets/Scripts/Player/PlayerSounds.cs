@@ -55,8 +55,6 @@ public class PlayerSounds : MonoBehaviour
     {
         if (swingClips == null || swingClips.Length == 0) return;
 
-        // if you have one clip per attack step use that index
-        // otherwise just pick randomly from what you have
         int index = Mathf.Min(comboStep - 1, swingClips.Length - 1);
         SoundManager.Instance.PlayWithPitchVariation(
             swingClips[index],

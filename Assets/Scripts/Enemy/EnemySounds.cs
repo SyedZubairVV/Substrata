@@ -34,10 +34,4 @@ public class EnemySounds : MonoBehaviour
     {
         SoundManager.Instance.PlayRandom(deathClips, transform.position, deathVolume);
     }
-
-    // reset aggro flag if enemy loses the player (optional)
-    public void ResetAggro()
-    {
-        hasPlayedAggro = false;
-    }
 }

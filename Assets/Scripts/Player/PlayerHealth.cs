@@ -92,6 +92,11 @@ public class PlayerHealth : MonoBehaviour
 
         rb.linearVelocity = Vector2.zero;
         rb.simulated = false;
+        // reset all states before triggering death
+        animator.SetBool("isRunning", false);
+        animator.SetBool("isAttacking", false);
+        animator.SetBool("isDashing", false);
+        animator.ResetTrigger("takingHit");
         animator.SetTrigger("die");
 
         // show game over after death animation
