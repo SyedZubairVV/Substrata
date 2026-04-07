@@ -28,10 +28,13 @@ public class PlayerHealth : MonoBehaviour
     private bool isDead;
     private bool isKnockedBack;
 
-	private void Awake()
-	{
-		Instance = this;
-	}
+    // static field survives scene loads without DontDestroyOnLoad
+    private static int savedHealth = -1;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {
@@ -42,9 +45,12 @@ public class PlayerHealth : MonoBehaviour
         sprite = GetComponent<SpriteRenderer>();
         if (sprite == null) sprite = GetComponentInChildren<SpriteRenderer>();
 
-        currentHealth = maxHealth;
+        // restore saved health from previous scene, or use max if first load
+        if (savedHealth >= 0)
+            currentHealth = savedHealth;
+        else
+            currentHealth = maxHealth;
 
-        // tell UIManager the max health
         if (UIManager.Instance != null)
         {
             UIManager.Instance.SetMaxHealth(maxHealth);
@@ -58,6 +64,7 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isInvincible || isDead) return;
         currentHealth = Mathf.Clamp(currentHealth - damage, 0, maxHealth);
+        savedHealth = currentHealth;
         OnHealthChanged?.Invoke(currentHealth);
 
         // update UI directly
@@ -78,6 +85,7 @@ public class PlayerHealth : MonoBehaviour
         if (isDead) return;
         if (currentHealth >= maxHealth) return;
         currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
+        savedHealth = currentHealth;
         OnHealthChanged?.Invoke(currentHealth);
         UIManager.Instance?.UpdateHealth(currentHealth, maxHealth);
     }
@@ -105,10 +113,7 @@ public class PlayerHealth : MonoBehaviour
 
     void TriggerGameOver()
     {
-        Debug.Log("Calling GameOverManager");
         GameOverManager.Instance?.ShowGameOver();
-        Debug.Log("Calling GameOverManager");
-
     }
 
     public void ResetPlayer()
@@ -117,6 +122,7 @@ public class PlayerHealth : MonoBehaviour
         isInvincible = false;
         isKnockedBack = false;
         currentHealth = maxHealth;
+        savedHealth = -1;
         OnHealthChanged?.Invoke(currentHealth);
 
         if (rb != null) rb.simulated = true;
@@ -157,7 +163,6 @@ public class PlayerHealth : MonoBehaviour
             playerMovement.enabled = true;
     }
 
-
     System.Collections.IEnumerator Invincibility()
     {
         isInvincible = true;
@@ -177,4 +182,9 @@ public class PlayerHealth : MonoBehaviour
 
     public int GetCurrentHealth() => currentHealth;
     public bool IsDead() => isDead;
+
+    public static void ResetSavedHealth()
+    {
+        savedHealth = -1;
+    }
 }
