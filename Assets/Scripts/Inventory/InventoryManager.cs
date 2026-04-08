@@ -11,6 +11,13 @@ public class InventoryManager : MonoBehaviour
 
     public List<LootItem> valuables = new List<LootItem>();
 
+    // tracks whether the singleton has already loaded once
+    private static bool initialized = false;
+    private static int savedTorches = 0;
+    private static int savedPotions = 0;
+    private static int defaultTorches = 0;
+    private static int defaultPotions = 0;
+
     [System.Serializable]
     public class LootItem
     {
@@ -25,6 +32,23 @@ public class InventoryManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            // on first load, keep whatever the Inspector has;
+            // on subsequent loads, restore the saved values
+            if (initialized)
+            {
+                torchCount = savedTorches;
+                potionCount = savedPotions;
+            }
+            else
+            {
+                // cache the Inspector values as the run defaults
+                defaultTorches = torchCount;
+                defaultPotions = potionCount;
+                initialized = true;
+            }
+
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else
         {
@@ -33,31 +57,29 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
-    void OnEnable()
+    void OnDestroy()
     {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        if (Instance == this)
+            SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // 🔥 Force UI refresh after scene load
+        // Force UI refresh after scene load
         UpdateUI();
     }
 
     public void AddTorch(int amount = 1)
     {
         torchCount += amount;
+        SaveCounts();
         UpdateUI();
     }
 
     public void AddPotion(int amount = 1)
     {
         potionCount += amount;
+        SaveCounts();
         UpdateUI();
     }
 
@@ -65,6 +87,7 @@ public class InventoryManager : MonoBehaviour
     {
         if (torchCount <= 0) return;
         torchCount--;
+        SaveCounts();
         UpdateUI();
     }
 
@@ -72,6 +95,7 @@ public class InventoryManager : MonoBehaviour
     {
         if (potionCount <= 0) return;
         potionCount--;
+        SaveCounts();
         UpdateUI();
     }
 
@@ -86,10 +110,18 @@ public class InventoryManager : MonoBehaviour
         UIManager.Instance?.UpdatePotions(potionCount);
     }
 
+    void SaveCounts()
+    {
+        savedTorches = torchCount;
+        savedPotions = potionCount;
+    }
+
     public void ResetInventory()
     {
-        torchCount = 0;
-        potionCount = 0;
+        torchCount = defaultTorches;
+        potionCount = defaultPotions;
+        savedTorches = defaultTorches;
+        savedPotions = defaultPotions;
         valuables.Clear();
         UpdateUI();
     }

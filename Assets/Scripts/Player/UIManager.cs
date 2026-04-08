@@ -75,15 +75,6 @@ public class UIManager : MonoBehaviour
         // re-find all UI elements since scene changed
         StartCoroutine(RefreshUI());
 
-        // Only reset the player when entering a gameplay scene from the main menu
-        // not on every transition like Cave->Surface
-        if (previousScene == "MainMenu" && scene.name != "MainMenu")
-        {
-            PlayerHealth ph = FindFirstObjectByType<PlayerHealth>();
-            if (ph != null)
-                ph.ResetPlayer();
-        }
-
         previousScene = scene.name;
     }
 

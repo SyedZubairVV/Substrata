@@ -29,6 +29,7 @@ public class GameOverManager : MonoBehaviour
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
+
     void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
@@ -56,14 +57,6 @@ public class GameOverManager : MonoBehaviour
         // Hide HUD on the main menu, show it everywhere else
         if (hudCanvas != null)
             hudCanvas.SetActive(scene.name != mainMenuSceneName);
-
-        // Reset player state when entering a gameplay scene
-        if (scene.name != mainMenuSceneName)
-        {
-            PlayerHealth ph = FindFirstObjectByType<PlayerHealth>();
-            if (ph != null)
-                ph.ResetPlayer();
-        }
     }
 
     public void ShowGameOver()
@@ -104,6 +97,8 @@ public class GameOverManager : MonoBehaviour
     void ResetRun()
     {
         // Wipe all persistent run state so the next run starts clean
+        PlayerHealth.ResetSavedHealth();
+
         if (InventoryManager.Instance != null)
             InventoryManager.Instance.ResetInventory();
 
