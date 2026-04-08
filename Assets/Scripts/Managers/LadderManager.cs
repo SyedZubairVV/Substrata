@@ -21,7 +21,8 @@ public class LadderManager : MonoBehaviour
     {
         if (!playerInRange || !Input.GetKeyDown(KeyCode.F)) return;
 
-        if (currentScene == "Surface")
+		// Conditional which determines which scene to load based on the current scene
+		if (currentScene == "Surface")
         {
             SceneSpawnManager.spawnPointName = "Spawn_Cave_Entrance";
             gameSceneManager.EnterCave();
@@ -33,6 +34,7 @@ public class LadderManager : MonoBehaviour
         }
     }
 
+    // OnTriggers for activating/deactivating the prompt
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))

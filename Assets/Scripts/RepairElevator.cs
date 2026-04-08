@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections;
 
+// This script handles the elevator repair and ride sequence,
+// which involves swapping out tiles on the tilemap and teleporting the player.
 public class ElevatorRepairTilemap : MonoBehaviour
 {
 	[Header("UI & Animation")]
@@ -12,7 +14,7 @@ public class ElevatorRepairTilemap : MonoBehaviour
 	[Header("Tile Settings")]
 	public Tilemap tilemap;
 	public Vector3Int brokenTopLeft;      // Coordinate of the broken elevator top-left
-	public Vector3Int fixedTemplateTopLeft; // Coordinate of your "Fixed" hidden version top-left
+	public Vector3Int fixedTemplateTopLeft; // Coordinate of the "Fixed" hidden version top-left
 	public Vector2Int fixedDimensions;         // How many tiles wide/tall (e.g. x:3, y:4)
 	public Vector3Int topPosTopLeft;
 	public Vector3Int topPosTemplateTopLeft;
