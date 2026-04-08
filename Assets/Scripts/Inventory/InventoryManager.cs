@@ -9,8 +9,6 @@ public class InventoryManager : MonoBehaviour
     public int torchCount = 0;
     public int potionCount = 0;
 
-    public List<LootItem> valuables = new List<LootItem>();
-
     // tracks whether the singleton has already loaded once
     private static bool initialized = false;
     private static int savedTorches = 0;
@@ -18,16 +16,9 @@ public class InventoryManager : MonoBehaviour
     private static int defaultTorches = 0;
     private static int defaultPotions = 0;
 
-    [System.Serializable]
-    public class LootItem
-    {
-        public string name;
-        public int goldValue;
-        public LootItem(string n, int v) { name = n; goldValue = v; }
-    }
-
     void Awake()
     {
+        // Singleton pattern
         if (Instance == null)
         {
             Instance = this;
@@ -99,11 +90,6 @@ public class InventoryManager : MonoBehaviour
         UpdateUI();
     }
 
-    public void AddLoot(string name, int price)
-    {
-        valuables.Add(new LootItem(name, price));
-    }
-
     public void UpdateUI()
     {
         UIManager.Instance?.UpdateTorches(torchCount);
@@ -122,7 +108,6 @@ public class InventoryManager : MonoBehaviour
         potionCount = defaultPotions;
         savedTorches = defaultTorches;
         savedPotions = defaultPotions;
-        valuables.Clear();
         UpdateUI();
     }
 }

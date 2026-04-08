@@ -27,9 +27,11 @@ public class PlayerMovement : MonoBehaviour
     [Header("Equipment")]
     public GameObject torchPrefab;
 
+    // Forces the torch to be placed slightly in front of the player
     [Header("Torch Settings")]
     public float torchOffset = 0.8f;
 
+    // For healing potions
     [Header("Healing")]
     public int healAmount = 20;
 
